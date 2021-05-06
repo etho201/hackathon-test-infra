@@ -1,0 +1,46 @@
+mysql:
+  enabled: false
+postgresql:
+  enabled: true
+  postgresqlDatabase: uip
+  service:
+    port: 5432
+mongodb:
+  enabled: false
+domain: 10.194.61.73.nip.io
+frontend:
+  name: frontend
+  github_repo: https://github.com:etho201/hackathon-test-frontend.git
+  image:
+    repository: registry.boozallensoftware.studio/hackathon-test-frontend
+    tag: 
+  ports:
+  - 80
+  ingress_path: /
+  replicaCount: 1
+backend:
+  name: backend
+  github_repo: https://github.boozallencsn.com/uip-hackathon-test/team1-backend.git
+  image:
+    repository: registry.boozallensoftware.studio/team1-backend
+    tag: null
+  ports:
+  - 8080
+  ingress_path: /api
+  replicaCount: 1
+  env: |
+    - name: SPRING_DATASOURCE_URL
+      value: "jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/uip"
+    - name: DB_NAME
+      value: uip
+    - name: DB_USER
+      value: postgres
+    - name: DB_PASS
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Release.Name }}-postgresql
+          key: postgresql-password
+  initContainers: |-
+    - name: wait-for-db
+      image: alpine
+      command: [ "/bin/sh", "-c", "sleep 40" ]
